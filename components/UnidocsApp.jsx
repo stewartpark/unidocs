@@ -53,6 +53,7 @@ export default class UnidocsApp extends React.Component {
 
   openDocument(_path) {
     function goBack() {
+      console.log(_path, path.dirname(_path));
       this.openTreeView(path.dirname(_path));
     }
     this.state = {

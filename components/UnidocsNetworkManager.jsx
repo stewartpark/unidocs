@@ -17,4 +17,12 @@ export default class UnidocsNetworkManager {
       path: absPath
     }, cb).fail(fail);
   }
+
+  static putFile(_path, content, cb, fail) {
+    var absPath = path.join('/', _path);
+    $.put('/api/v1/files', {
+      path: absPath,
+      content: content
+    }, cb).fail(fail);
+  }
 }

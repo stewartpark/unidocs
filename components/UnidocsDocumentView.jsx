@@ -16,9 +16,60 @@ export default class UnidocsDocumentView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      lastModified: undefined,
+      metadata: {},
       cells: []
     };
+  }
+
+  updateServer() {
+    var data = {};
+    data.metadata = this.state.metadata;
+    data.cells = [];
+    for(var i in this.state.cells) {
+      var cell = this.state.cells[i];
+      console.log(cell);
+      data.cells.push({
+        type: cell.props.data.type,
+        body: cell.props.data.body
+      });
+    }
+
+    var fileContent = JSON.stringify(data);
+    console.log(fileContent);
+    UnidocsNetworkManager.putFile(this.props.path, fileContent);
+  }
+
+  onCellMoveUp(index, data) {
+
+  }
+
+  onCellMoveDown(index, data) {
+
+  }
+
+  onCellChange(index, data) {
+    this.state.cells[index] = this.generateCell(index, data);
+    this.setState(this.state);
+    this.updateServer();
+  }
+
+  onCellAddAbove(index, data) {
+
+  }
+
+  onCellAddBelow(index, data) {
+
+  }
+
+  generateCell(index, data) {
+    return <UnidocsCellView
+      data={data}
+      index={index}
+      onCellMoveUp={this.onCellMoveUp.bind(this)}
+      onCellMoveDown={this.onCellMoveDown.bind(this)}
+      onCellChange={this.onCellChange.bind(this)}
+      onCellAddAbove={this.onCellAddAbove.bind(this)}
+      onCellAddBelow={this.onCellAddBelow.bind(this)} />;
   }
 
   componentDidMount() {
@@ -29,22 +80,17 @@ export default class UnidocsDocumentView extends React.Component {
       var elements = [];
 
       for(var i in doc.cells) {
-        var cell = doc.cells[i];
-        elements.push(<UnidocsCellView data={cell} />);
+        elements.push(this.generateCell(i, doc.cells[i]));
       }
 
+      this.state.metadata = doc.metadata;
       this.state.cells = elements;
-      this.setState(this.state.cells);
+      this.setState(this.state);
     }.bind(this));
   }
 
   render() {
     return (<div>
-      <Toolbar>
-        <ToolbarGroup key={0} float="right">
-          <RaisedButton label="Edit" primary={true} />
-        </ToolbarGroup>
-      </Toolbar>
       {this.state.cells}
     </div>);
   }

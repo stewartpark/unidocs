@@ -1,12 +1,15 @@
 /* jshint esnext: true */
 
-import http from 'http';
 import express from 'express';
+import bodyParser from 'body-parser';
+import methodOverride from 'method-override';
 import React from 'react';
-import UnidocsApp from '../components/UnidocsApp';
+
 import path from 'path';
 import mkdirp from 'mkdirp';
 import fs from 'fs';
+
+import UnidocsApp from '../components/UnidocsApp';
 
 global.__SERVER__ = true;
 
@@ -15,6 +18,13 @@ const port = process.env.PORT || 3000;
 const config = {
   documentPath: '/tmp/docs'
 };
+
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(methodOverride());
+
+// Endpoints
 
 /**
   @endpoint GET /api/v1/folders
@@ -109,7 +119,21 @@ app.post('/api/v1/files', function(req, res) {
   @param content
 */
 app.put('/api/v1/files', function(req, res) {
+  var relPath = path.join('/', req.body.path || '/');
+  var absPath = path.join(config.documentPath, relPath);
+  var content = req.body.content;
+  if(content) {
+    fs.writeFile(absPath, content, function(err) {
+      if(err) {
+        res.status(404).end('File not found');
+        return;
+      }
 
+      res.status(200).end("");
+    });
+  } else {
+    res.status(500).end("`content` is empty.");
+  }
 });
 
 /**

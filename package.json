@@ -9,10 +9,12 @@
   "author": "Epilet LLC",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "jquery": "^2.1.4",
     "material-ui": "^0.12.3",
+    "method-override": "^2.3.5",
     "mkdirp": "^0.5.1",
     "react": "^0.13.3",
     "react-dom": "^0.14.0",
