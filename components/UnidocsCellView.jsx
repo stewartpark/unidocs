@@ -68,21 +68,35 @@ export default class UnidocsCellView extends React.Component {
       newType = data.text;
     }
     newType = newType || this.props.data.type;
-    console.log(index, data, newType);
     this.props.data.type = newType;
     this.props.data.body = newBody;
   }
 
-  onMoveUp () {
+  componentWillReceiveProps(nextProps) {
+    console.log('nextProps', nextProps);
+    this.props = nextProps;
+    this.forceUpdate();
+  }
 
+  onMoveUp () {
+    this.refs.toggle.setToggled(false);
+    this.state.isEditing = false;
+    this.props.onCellChange(this.props.index, this.props.data);
+    this.props.onCellMoveUp(this.props.index, this.props.data);
   }
 
   onMoveDown () {
-
+    this.refs.toggle.setToggled(false);
+    this.state.isEditing = false;
+    this.props.onCellChange(this.props.index, this.props.data);
+    this.props.onCellMoveDown(this.props.index, this.props.data);
   }
 
   onAdd() {
-    
+    this.props.onCellAddBelow(this.props.index, {
+      type: types[0].text,
+      body: ''
+    });
   }
 
   render() {
@@ -118,11 +132,11 @@ export default class UnidocsCellView extends React.Component {
       }
     }
     if(!this.props.disableToggle) {
-      toggle = <div style={{float: 'right', width: '100px', paddingTop: '14px'}}>
-        <Toggle onToggle={this.onToggle.bind(this)} label="Edit?" />
+      toggle = <div style={{float: 'right', width: '100px'}}>
+        <Toggle ref="toggle" value={this.state.isEditing} onToggle={this.onToggle.bind(this)} label="Edit?" />
       </div>;
     }
-    return (<div>
+    return (<div style={{minHeight: '38px'}}>
       {toggle}
       {view}
     </div>);

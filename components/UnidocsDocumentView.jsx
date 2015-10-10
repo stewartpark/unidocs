@@ -25,12 +25,12 @@ export default class UnidocsDocumentView extends React.Component {
     var data = {};
     data.metadata = this.state.metadata;
     data.cells = [];
+    console.log(this.state.cells);
     for(var i in this.state.cells) {
       var cell = this.state.cells[i];
-      console.log(cell);
       data.cells.push({
-        type: cell.props.data.type,
-        body: cell.props.data.body
+        type: cell.data.type,
+        body: cell.data.body
       });
     }
 
@@ -40,16 +40,34 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   onCellMoveUp(index, data) {
+    console.log(index, data);
+    if(+index > 0) {
+      var t = this.state.cells[+index-1].data;
+      this.state.cells[+index-1].data = this.state.cells[+index].data;
+      this.state.cells[+index].data = t;
 
+      this.setState(this.state);
+      this.forceUpdate();
+      this.updateServer();
+    }
   }
 
   onCellMoveDown(index, data) {
+    if(+index < this.state.cells.length-1) {
+      var t = this.state.cells[+index+1].data;
+      this.state.cells[+index+1].data = this.state.cells[+index].data;
+      this.state.cells[+index].data = t;
 
+      this.setState(this.state);
+      this.forceUpdate();
+      this.updateServer();
+    }
   }
 
   onCellChange(index, data) {
-    this.state.cells[index] = this.generateCell(index, data);
+    this.state.cells[+index] = {index: index, data: data};
     this.setState(this.state);
+    this.forceUpdate();
     this.updateServer();
   }
 
@@ -58,7 +76,13 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   onCellAddBelow(index, data) {
+    this.state.cells.push({
+      index: this.state.cells.length,
+      data: data
+    });
 
+    this.setState(this.state);
+    this.updateServer();
   }
 
   generateCell(index, data) {
@@ -80,7 +104,7 @@ export default class UnidocsDocumentView extends React.Component {
       var elements = [];
 
       for(var i in doc.cells) {
-        elements.push(this.generateCell(i, doc.cells[i]));
+        elements.push({index: i, data: doc.cells[i]});
       }
 
       this.state.metadata = doc.metadata;
@@ -90,8 +114,12 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   render() {
+    var cells = this.state.cells.map(function(el) {
+      return this.generateCell(el.index, el.data);
+    }.bind(this));
+
     return (<div>
-      {this.state.cells}
+      {cells}
     </div>);
   }
 }
