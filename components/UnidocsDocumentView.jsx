@@ -21,11 +21,16 @@ export default class UnidocsDocumentView extends React.Component {
     };
   }
 
+  componentWillReceiveProps(newProps) {
+    console.log(newProps);
+    this.props = newProps;
+  }
+
   updateServer() {
     var data = {};
     data.metadata = this.state.metadata;
     data.cells = [];
-    console.log(this.state.cells);
+
     for(var i in this.state.cells) {
       var cell = this.state.cells[i];
       data.cells.push({
@@ -35,12 +40,10 @@ export default class UnidocsDocumentView extends React.Component {
     }
 
     var fileContent = JSON.stringify(data);
-    console.log(fileContent);
     UnidocsNetworkManager.putFile(this.props.path, fileContent);
   }
 
   onCellMoveUp(index, data) {
-    console.log(index, data);
     if(+index > 0) {
       var t = this.state.cells[+index-1].data;
       this.state.cells[+index-1].data = this.state.cells[+index].data;
@@ -65,7 +68,7 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   onCellChange(index, data) {
-    this.state.cells[+index] = {index: index, data: data};
+    this.state.cells[+index] = {data: data};
     this.setState(this.state);
     this.forceUpdate();
     this.updateServer();
@@ -77,10 +80,15 @@ export default class UnidocsDocumentView extends React.Component {
 
   onCellAddBelow(index, data) {
     this.state.cells.push({
-      index: this.state.cells.length,
       data: data
     });
 
+    this.setState(this.state);
+    this.updateServer();
+  }
+
+  onCellDelete(index, data) {
+    this.state.cells.splice(index, 1);
     this.setState(this.state);
     this.updateServer();
   }
@@ -93,7 +101,9 @@ export default class UnidocsDocumentView extends React.Component {
       onCellMoveDown={this.onCellMoveDown.bind(this)}
       onCellChange={this.onCellChange.bind(this)}
       onCellAddAbove={this.onCellAddAbove.bind(this)}
-      onCellAddBelow={this.onCellAddBelow.bind(this)} />;
+      onCellAddBelow={this.onCellAddBelow.bind(this)}
+      onCellDelete={this.onCellDelete.bind(this)}
+      disableToggle={this.props.disableToggle} />;
   }
 
   componentDidMount() {
@@ -104,7 +114,7 @@ export default class UnidocsDocumentView extends React.Component {
       var elements = [];
 
       for(var i in doc.cells) {
-        elements.push({index: i, data: doc.cells[i]});
+        elements.push({data: doc.cells[i]});
       }
 
       this.state.metadata = doc.metadata;
@@ -114,9 +124,10 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   render() {
-    var cells = this.state.cells.map(function(el) {
-      return this.generateCell(el.index, el.data);
-    }.bind(this));
+    var cells = [];
+    for(var i in this.state.cells) {
+      cells.push(this.generateCell(i, this.state.cells[i].data));
+    }
 
     return (<div>
       {cells}

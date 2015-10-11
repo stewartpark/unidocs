@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import methodOverride from 'method-override';
 import React from 'react';
 
+import mysql from 'mysql';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import fs from 'fs';
@@ -16,8 +17,21 @@ global.__SERVER__ = true;
 const app = express();
 const port = process.env.PORT || 3000;
 const config = {
-  documentPath: '/tmp/docs'
+  documentPath: process.env.DOCUMENT_ROOT || '/tmp/docs',
+  mysql: {
+    host: process.env.MYSQL_HOST || 'localhost',
+    port: process.env.MYSQL_PORT || 3306,
+    username: process.env.MYSQL_USERNAME || 'root',
+    password: process.env.MYSQL_PASSWORD
+  }
 };
+var mysql_conn = mysql.createPool({
+  connectionLimit: 10,
+  host: config.mysql.host,
+  port: config.mysql.port,
+  user: config.mysql.username,
+  password: config.mysql.password
+});
 
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -71,7 +85,22 @@ app.get('/api/v1/folders', function(req, res){
   @param name
 */
 app.post('/api/v1/folders', function(req, res) {
+  if(!req.body.path || !req.body.name) {
+    res.status(500).end("`path` and `name` are required.");
+    return;
+  }
 
+  var relPath = path.join('/', req.body.path, req.body.name);
+  var absPath = path.join(config.documentPath, relPath);
+
+  mkdirp(absPath, function(err) {
+    if(err) {
+      res.status(500).end();
+      return;
+    }
+
+    res.status(200).end();
+  });
 });
 
 /**
@@ -109,7 +138,28 @@ app.get('/api/v1/files', function(req, res) {
   @param name
 */
 app.post('/api/v1/files', function(req, res) {
+  if(!req.body.path || !req.body.name) {
+    res.status(500).end("`path` and `name` are required.");
+    return;
+  }
 
+  var relPath = path.join('/', req.body.path, req.body.name);
+  var absPath = path.join(config.documentPath, relPath);
+  var content = JSON.stringify({
+    metadata: {},
+    cells: [
+      {'type': 'Markdown', 'body': 'A new document!'}
+    ]
+  });
+  console.log(absPath, content);
+  fs.writeFile(absPath, content, function(err) {
+    if(err) {
+      res.status(500).end();
+      return;
+    }
+
+    res.status(200).end();
+  });
 });
 
 /**
@@ -125,11 +175,11 @@ app.put('/api/v1/files', function(req, res) {
   if(content) {
     fs.writeFile(absPath, content, function(err) {
       if(err) {
-        res.status(404).end('File not found');
+        res.status(500).end();
         return;
       }
 
-      res.status(200).end("");
+      res.status(200).end();
     });
   } else {
     res.status(500).end("`content` is empty.");
@@ -143,6 +193,50 @@ app.put('/api/v1/files', function(req, res) {
 */
 app.delete('/api/v1/files', function(req, res) {
 
+});
+
+/**
+  @endpoint POST /api/v1/actions/run/sql
+  @description Export a folder/file
+  @param path
+*/
+app.post('/api/v1/actions/run/sql', function(req, res) {
+  var query = req.body.query;
+  var database = req.body.database;
+
+  if(query && database) {
+    mysql_conn.getConnection(function(err, conn){
+      if(err) {
+        res.status(500).json(err);
+        return;
+      }
+
+      conn.query("USE " + mysql.escapeId(database), function(err) {
+        if(err) {
+          res.status(500).json(err);
+          return;
+        }
+
+        conn.query({
+          sql: query,
+          timeout: 60000
+        }, function(err, results, fields) {
+          if(err) {
+            res.status(500).json(err);
+            return;
+          }
+
+          res.status(200).json({
+            rows: results,
+            fields: fields
+          });
+          conn.release();
+        });
+      });
+    });
+  } else {
+    res.status(500).end("`query` and `database` are required.");
+  }
 });
 
 /**

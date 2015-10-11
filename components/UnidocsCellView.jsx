@@ -24,7 +24,10 @@ import MenuIcon from 'material-ui/lib/svg-icons/navigation/menu';
 import ArrowUpIcon from 'material-ui/lib/svg-icons/navigation/arrow-drop-up';
 import ArrowDownIcon from 'material-ui/lib/svg-icons/navigation/arrow-drop-down';
 import AddIcon from 'material-ui/lib/svg-icons/content/add-box';
+import DeleteIcon from 'material-ui/lib/svg-icons/action/delete';
+import EditIcon from 'material-ui/lib/svg-icons/image/edit.js';
 
+import UnidocsSQLView from './UnidocsSQLView';
 import UnidocsFolderListItem from './UnidocsFolderListItem';
 import UnidocsFileListItem from './UnidocsFileListItem';
 import UnidocsNetworkManager from './UnidocsNetworkManager';
@@ -73,7 +76,6 @@ export default class UnidocsCellView extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('nextProps', nextProps);
     this.props = nextProps;
     this.forceUpdate();
   }
@@ -90,6 +92,13 @@ export default class UnidocsCellView extends React.Component {
     this.state.isEditing = false;
     this.props.onCellChange(this.props.index, this.props.data);
     this.props.onCellMoveDown(this.props.index, this.props.data);
+  }
+
+  onDelete() {
+    this.refs.toggle.setToggled(false);
+    this.state.isEditing = false;
+    this.props.onCellDelete(this.props.index, this.props.data);
+    this.forceUpdate();
   }
 
   onAdd() {
@@ -115,6 +124,9 @@ export default class UnidocsCellView extends React.Component {
         <IconButton tooltip="Add a new cell" tooltipPosition="bottom-right" onTouchTap={this.onAdd.bind(this)}>
           <AddIcon />
         </IconButton>
+        <IconButton tooltip="Delete this cell" tooltipPosition="bottom-right" onTouchTap={this.onDelete.bind(this)}>
+          <DeleteIcon />
+        </IconButton>
         <br />
         <TextField ref="body" style={{width: '100%'}} multiLine={true} defaultValue={this.props.data.body} onChange={this.onChange.bind(this)} />
       </div>);
@@ -124,16 +136,16 @@ export default class UnidocsCellView extends React.Component {
           view = <Markdown>{this.props.data.body}</Markdown>;
           break;
         case 'SQL':
-          view = <b>{this.props.data.body}</b>;
+          view = <UnidocsSQLView sql={this.props.data.body} />;
           break;
         default:
           view = <b>Unsupported cell type</b>;
           break;
       }
-    }
+    } 
     if(!this.props.disableToggle) {
-      toggle = <div style={{float: 'right', width: '100px'}}>
-        <Toggle ref="toggle" value={this.state.isEditing} onToggle={this.onToggle.bind(this)} label="Edit?" />
+      toggle = <div style={{float: 'right', width: '80px'}}>
+        <Toggle ref="toggle" value={this.state.isEditing} onToggle={this.onToggle.bind(this)} label={<EditIcon />} />
       </div>;
     }
     return (<div style={{minHeight: '38px'}}>

@@ -6,6 +6,7 @@ import ThemeDecorator from 'material-ui/lib/styles/theme-decorator';
 import AppBar from 'material-ui/lib/app-bar';
 import LeftNav from 'material-ui/lib/left-nav';
 import Dialog from 'material-ui/lib/dialog';
+import Toggle from 'material-ui/lib/toggle';
 import TextField from 'material-ui/lib/text-field';
 import IconMenu from 'material-ui/lib/menus/icon-menu';
 import MenuItem from 'material-ui/lib/menus/menu-item';
@@ -16,6 +17,7 @@ import AddFileIcon from 'material-ui/lib/svg-icons/action/note-add';
 import AddFolderIcon from 'material-ui/lib/svg-icons/content/add';
 import BackIcon from 'material-ui/lib/svg-icons/navigation/close';
 import MenuIcon from 'material-ui/lib/svg-icons/navigation/menu';
+import EditIcon from 'material-ui/lib/svg-icons/image/edit.js';
 
 import UnidocsTheme from './UnidocsTheme';
 import UnidocsTreeView from './UnidocsTreeView';
@@ -51,17 +53,19 @@ export default class UnidocsApp extends React.Component {
     this.setState(this.state);
   }
 
-  openDocument(_path) {
+  openDocument(_path, readonly) {
     function goBack() {
-      console.log(_path, path.dirname(_path));
       this.openTreeView(path.dirname(_path));
+    }
+    function toggleMode(event, toggled) {
+      this.openDocument(_path, toggled);
     }
     this.state = {
       path: _path,
       title: path.basename(_path),
       leftMenu: <IconButton onTouchTap={goBack.bind(this)}><BackIcon /></IconButton>,
-      rightMenu: undefined,
-      view: <UnidocsDocumentView path={_path} onBack={this.openTreeView.bind(this)} />
+      rightMenu: <div style={{width: '80px'}}><Toggle label={<EditIcon />} onToggle={toggleMode.bind(this)}/></div>,
+      view: <UnidocsDocumentView path={_path} disableToggle={!readonly} onBack={this.openTreeView.bind(this)} />
     };
     this.refresh();
     this.setURL(_path);
@@ -74,6 +78,9 @@ export default class UnidocsApp extends React.Component {
     function openAddFolder () {
       this.refs.addNewFolderDialog.show();
     }
+    function openAddFile() {
+      this.refs.addNewFileDialog.show();
+    }
 
     this.state = {
       path: _path,
@@ -82,7 +89,7 @@ export default class UnidocsApp extends React.Component {
       rightMenu:
         <IconMenu iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}>
           <MenuItem primaryText="Add a new folder" leftIcon={<AddFolderIcon />} onTouchTap={openAddFolder.bind(this)} />
-          <MenuItem primaryText="Add a new document" leftIcon={<AddFileIcon />} />
+          <MenuItem primaryText="Add a new document" leftIcon={<AddFileIcon />} onTouchTap={openAddFile.bind(this)} />
         </IconMenu>,
       view: <UnidocsTreeView path={_path} onChangePath={this.openTreeView.bind(this)} onDocumentOpen={this.openDocument.bind(this)} />
     };
@@ -95,10 +102,23 @@ export default class UnidocsApp extends React.Component {
   }
 
   onAddFolder() {
-    //TODO Create a new folder in the server
-    console.log(this.refs.newFolderName.getValue());
-    this.refs.addNewFolderDialog.dismiss();
-    this.openTreeView(this.state.path); // This will refresh the tree view.
+    UnidocsNetworkManager.postFolder(this.state.path, this.refs.newFolderName.getValue(), function(){
+      this.refs.addNewFolderDialog.dismiss();
+      this.refs.newFolderName.clearValue();
+      location.reload(); //this.openTreeView(this.state.path); // This will refresh the tree view.
+    }.bind(this), function(){
+      alert('Error occurred.');
+    }.bind(this));
+  }
+
+  onAddFile() {
+    UnidocsNetworkManager.postFile(this.state.path, this.refs.newFileName.getValue(), function(){
+      this.refs.addNewFileDialog.dismiss();
+      this.refs.newFileName.clearValue();
+      location.reload(); //this.openTreeView(this.state.path); // This will refresh the tree view.
+    }.bind(this), function(){
+      alert('Error occurred.');
+    }.bind(this));
   }
 
   render() {
@@ -114,6 +134,13 @@ export default class UnidocsApp extends React.Component {
         ]} ref="addNewFolderDialog">
           Add a new folder under the current folder!<br />
           Name: <TextField hintText="Name of the new folder" ref="newFolderName" />
+        </Dialog>
+        <Dialog title="Add a new folder" actions={[
+          { text: 'Cancel' },
+          { text: 'Add', onTouchTap: this.onAddFile.bind(this), ref: 'add' }
+        ]} ref="addNewFileDialog">
+          Add a new file under the current folder!<br />
+          Name: <TextField hintText="Name of the new folder" ref="newFileName" />
         </Dialog>
         <AppBar
           title={this.state.title}

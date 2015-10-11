@@ -11,10 +11,26 @@ export default class UnidocsNetworkManager {
     }, cb).fail(fail);
   }
 
+  static postFolder(_path, _name, cb, fail) {
+    var absPath = path.join('/', _path);
+    $.post('/api/v1/folders', {
+      path: absPath,
+      name: _name
+    }, cb).fail(fail);
+  }
+
   static getFile(_path, cb, fail) {
     var absPath = path.join('/', _path);
     $.get('/api/v1/files', {
       path: absPath
+    }, cb).fail(fail);
+  }
+
+  static postFile(_path, _name, cb, fail) {
+    var absPath = path.join('/', _path);
+    $.post('/api/v1/files', {
+      path: absPath,
+      name: _name
     }, cb).fail(fail);
   }
 
@@ -23,6 +39,13 @@ export default class UnidocsNetworkManager {
     $.put('/api/v1/files', {
       path: absPath,
       content: content
+    }, cb).fail(fail);
+  }
+
+  static actionRunSQL(db_name, sql, cb, fail) {
+    $.post('/api/v1/actions/run/sql', {
+      query: $.trim(sql),
+      database: $.trim(db_name)
     }, cb).fail(fail);
   }
 }
