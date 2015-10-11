@@ -135,12 +135,12 @@ export default class UnidocsApp extends React.Component {
           Add a new folder under the current folder!<br />
           Name: <TextField hintText="Name of the new folder" ref="newFolderName" />
         </Dialog>
-        <Dialog title="Add a new folder" actions={[
+        <Dialog title="Add a new file" actions={[
           { text: 'Cancel' },
           { text: 'Add', onTouchTap: this.onAddFile.bind(this), ref: 'add' }
         ]} ref="addNewFileDialog">
           Add a new file under the current folder!<br />
-          Name: <TextField hintText="Name of the new folder" ref="newFileName" />
+          Name: <TextField hintText="Name of the new file" ref="newFileName" />
         </Dialog>
         <AppBar
           title={this.state.title}
