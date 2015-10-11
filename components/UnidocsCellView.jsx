@@ -88,16 +88,19 @@ export default class UnidocsCellView extends React.Component {
   }
 
   onMoveUp () {
+    this.refs.toggle.setToggled(this.state.isEditing = false);
     this.props.onCellChange(this.props.index, this.props.data);
     this.props.onCellMoveUp(this.props.index, this.props.data);
   }
 
   onMoveDown () {
+    this.refs.toggle.setToggled(this.state.isEditing = false);
     this.props.onCellChange(this.props.index, this.props.data);
     this.props.onCellMoveDown(this.props.index, this.props.data);
   }
 
   onDelete() {
+    this.refs.toggle.setToggled(this.state.isEditing = false);
     this.props.onCellDelete(this.props.index, this.props.data);
     this.forceUpdate();
   }

@@ -66,7 +66,7 @@ export default class UnidocsApp extends React.Component {
       path: _path,
       title: path.basename(_path),
       leftMenu: <IconButton onTouchTap={goBack.bind(this)}><BackIcon /></IconButton>,
-      rightMenu: <div style={{width: '80px'}}><Toggle label={<EditIcon />} onToggle={toggleMode.bind(this)}/></div>,
+      rightMenu: <div style={{width: '80px', marginTop: '10px'}}><Toggle label={<EditIcon />} onToggle={toggleMode.bind(this)}/></div>,
       view: <UnidocsDocumentView path={_path} disableToggle={!readonly} onBack={this.openTreeView.bind(this)} />
     };
     this.refresh();
