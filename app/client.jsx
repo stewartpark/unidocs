@@ -33,4 +33,4 @@ jQuery.extend({
 });
 
 // Render the app.
-React.render(<UnidocsApp initialPath={location.pathname} />, document.getElementById('content'));
+React.render(<UnidocsApp initialPath={unescape(location.pathname)} />, document.getElementById('content'));

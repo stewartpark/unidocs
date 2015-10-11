@@ -88,7 +88,9 @@ export default class UnidocsDocumentView extends React.Component {
   }
 
   onCellDelete(index, data) {
-    this.state.cells.splice(index, 1);
+    if(this.state.cells.length > 1) {
+      this.state.cells.splice(index, 1);
+    }
     this.setState(this.state);
     this.updateServer();
   }

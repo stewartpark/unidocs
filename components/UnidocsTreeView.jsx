@@ -48,13 +48,13 @@ export default class UnidocsTreeView extends React.Component {
 
     for(var i in this.state.folders) {
       foldersElement.push(
-        <UnidocsFolderListItem name={i} lastModified={this.state.folders[i].lastModified} onOpen={this.onFolderOpen.bind(this)} />
+        <UnidocsFolderListItem path={this.props.path} name={i} lastModified={this.state.folders[i].lastModified} onOpen={this.onFolderOpen.bind(this)} />
       );
     }
 
     for(var j in this.state.files) {
       filesElement.push(
-        <UnidocsFileListItem name={j} lastModified={this.state.files[j].lastModified} onOpen={this.onFileOpen.bind(this)} />
+        <UnidocsFileListItem path={this.props.path} name={j} lastModified={this.state.files[j].lastModified} onOpen={this.onFileOpen.bind(this)} />
       );
     }
 

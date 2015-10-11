@@ -19,6 +19,13 @@ export default class UnidocsNetworkManager {
     }, cb).fail(fail);
   }
 
+  static deleteFolder(_path, cb, fail) {
+    var absPath = path.join('/', _path);
+    $.delete_('/api/v1/folders', {
+      path: absPath
+    }, cb).fail(fail);
+  }
+
   static getFile(_path, cb, fail) {
     var absPath = path.join('/', _path);
     $.get('/api/v1/files', {
@@ -39,6 +46,13 @@ export default class UnidocsNetworkManager {
     $.put('/api/v1/files', {
       path: absPath,
       content: content
+    }, cb).fail(fail);
+  }
+
+  static deleteFile(_path, cb, fail) {
+    var absPath = path.join('/', _path);
+    $.delete_('/api/v1/files', {
+      path: absPath
     }, cb).fail(fail);
   }
 

@@ -18,6 +18,8 @@ import AddFolderIcon from 'material-ui/lib/svg-icons/content/add';
 import BackIcon from 'material-ui/lib/svg-icons/navigation/close';
 import MenuIcon from 'material-ui/lib/svg-icons/navigation/menu';
 import EditIcon from 'material-ui/lib/svg-icons/image/edit.js';
+import FolderIcon from 'material-ui/lib/svg-icons/file/folder';
+import FileIcon from 'material-ui/lib/svg-icons/action/subject';
 
 import UnidocsTheme from './UnidocsTheme';
 import UnidocsTreeView from './UnidocsTreeView';

@@ -34,7 +34,7 @@ import UnidocsNetworkManager from './UnidocsNetworkManager';
 
 import path from 'path';
 
-const types = [
+export const types = [
   {'text': 'Markdown'},
   {'text': 'SQL'}
 ];
@@ -67,36 +67,37 @@ export default class UnidocsCellView extends React.Component {
   onChange(event, index, data) {
     var newBody = this.refs.body.getValue();
     var newType;
+    console.log(this.refs.type);
     if(index !== undefined) {
       newType = data.text;
     }
     newType = newType || this.props.data.type;
     this.props.data.type = newType;
     this.props.data.body = newBody;
+    this.forceUpdate();
   }
 
   componentWillReceiveProps(nextProps) {
     this.props = nextProps;
+    try {
+      this.refs.body.setValue(this.props.data.body);
+    }catch(e){
+      console.log(e);
+    }
     this.forceUpdate();
   }
 
   onMoveUp () {
-    this.refs.toggle.setToggled(false);
-    this.state.isEditing = false;
     this.props.onCellChange(this.props.index, this.props.data);
     this.props.onCellMoveUp(this.props.index, this.props.data);
   }
 
   onMoveDown () {
-    this.refs.toggle.setToggled(false);
-    this.state.isEditing = false;
     this.props.onCellChange(this.props.index, this.props.data);
     this.props.onCellMoveDown(this.props.index, this.props.data);
   }
 
   onDelete() {
-    this.refs.toggle.setToggled(false);
-    this.state.isEditing = false;
     this.props.onCellDelete(this.props.index, this.props.data);
     this.forceUpdate();
   }
@@ -112,8 +113,9 @@ export default class UnidocsCellView extends React.Component {
     var view;
     var toggle;
 
-    if(this.state.isEditing) {
+    if(!this.props.disableToggle && this.state.isEditing) {
       view = (<div>
+        <hr />
         <SelectField ref="type" style={{float:'right'}} selectedIndex={this.getTypeIndexByValue(this.props.data.type)} valueMember="text" menuItems={types} onChange={this.onChange.bind(this)} />
         <IconButton tooltip="Move Up" tooltipPosition="bottom-right" onTouchTap={this.onMoveUp.bind(this)}>
           <ArrowUpIcon />
@@ -142,7 +144,7 @@ export default class UnidocsCellView extends React.Component {
           view = <b>Unsupported cell type</b>;
           break;
       }
-    } 
+    }
     if(!this.props.disableToggle) {
       toggle = <div style={{float: 'right', width: '80px'}}>
         <Toggle ref="toggle" value={this.state.isEditing} onToggle={this.onToggle.bind(this)} label={<EditIcon />} />

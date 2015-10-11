@@ -7,10 +7,10 @@ import React from 'react';
 
 import mysql from 'mysql';
 import path from 'path';
-import mkdirp from 'mkdirp';
-import fs from 'fs';
+import fs from 'fs.extra';
 
 import UnidocsApp from '../components/UnidocsApp';
+import { types } from '../components/UnidocsCellView';
 
 global.__SERVER__ = true;
 
@@ -93,7 +93,7 @@ app.post('/api/v1/folders', function(req, res) {
   var relPath = path.join('/', req.body.path, req.body.name);
   var absPath = path.join(config.documentPath, relPath);
 
-  mkdirp(absPath, function(err) {
+  fs.mkdirp(absPath, function(err) {
     if(err) {
       res.status(500).end();
       return;
@@ -104,12 +104,21 @@ app.post('/api/v1/folders', function(req, res) {
 });
 
 /**
-  @endpoint DELETE /api/v1/files
+  @endpoint DELETE /api/v1/folders
   @description Delete a folder
   @param path
 */
 app.delete('/api/v1/folders', function(req, res) {
+  var relPath = path.join('/', req.body.path || '/');
+  var absPath = path.join(config.documentPath, relPath);
+  fs.rmrf(absPath, function(err) {
+    if(err) {
+      res.status(500).end();
+      return;
+    }
 
+    res.status(200).end();
+  });
 });
 
 /**
@@ -148,10 +157,10 @@ app.post('/api/v1/files', function(req, res) {
   var content = JSON.stringify({
     metadata: {},
     cells: [
-      {'type': 'Markdown', 'body': 'A new document!'}
+      {'type': types[0].text, 'body': 'A new document!'}
     ]
   });
-  console.log(absPath, content);
+  
   fs.writeFile(absPath, content, function(err) {
     if(err) {
       res.status(500).end();
@@ -192,7 +201,16 @@ app.put('/api/v1/files', function(req, res) {
   @param path
 */
 app.delete('/api/v1/files', function(req, res) {
+  var relPath = path.join('/', req.body.path || '/');
+  var absPath = path.join(config.documentPath, relPath);
+  fs.rmrf(absPath, function(err) {
+    if(err) {
+      res.status(500).end();
+      return;
+    }
 
+    res.status(200).end();
+  });
 });
 
 /**
@@ -246,7 +264,7 @@ app.post('/api/v1/actions/run/sql', function(req, res) {
   @param new_path
 */
 app.post('/api/v1/actions/rename', function(req, res) {
-
+  //TODO
 });
 
 /**
@@ -255,7 +273,7 @@ app.post('/api/v1/actions/rename', function(req, res) {
   @param path
 */
 app.post('/api/v1/actions/export', function(req, res) {
-
+  //TODO
 });
 
 /**
@@ -273,15 +291,15 @@ app.get('/client.js', function(req, res) {
   @description Render the view of the application to the client.
 */
 app.get('*', function(req, res) {
-  var reactHtml = React.renderToString(<UnidocsApp initialPath={req.url} />);
-  var head = "<html><head><title>Unidocs</title></head><body style=\"margin: 0\"><div id=\"content\">";
+  var reactHtml = React.renderToString(<UnidocsApp initialPath={unescape(req.url)} />);
+  var head = "<html><head><title>Unidocs</title><link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'></head><body style=\"margin: 0; font-face: Roboto;\"><div id=\"content\">";
   var tail = "</div><script src=\"/client.js\" type=\"text/javascript\"></script></body></html>";
   res.end(head + reactHtml + tail);
 });
 
-app.listen(port, 'localhost', function(err) {
+app.listen(port, '0.0.0.0', function(err) {
   // Create the document root if it doesn't exist.
-  mkdirp(config.documentPath);
+  fs.mkdirp(config.documentPath);
 
-  console.info('==> 🌎 Listening on http://127.0.0.1:%s/', port);
+  console.info('==> 🌎 Listening on http://0.0.0.0:%s/', port);
 });
